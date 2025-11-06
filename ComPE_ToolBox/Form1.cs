@@ -21,10 +21,7 @@ namespace ComPE_ToolBox
 
         }
 
-        private void tabPage3_Click_1(object sender, EventArgs e)
-        {
 
-        }
 
         private void divider2_Click(object sender, EventArgs e)
         {
@@ -83,7 +80,8 @@ namespace ComPE_ToolBox
                 return;
             }
             button2.Loading = true;
-            //int result = LocalPE.InstallPE(input1.Text, 1, progress1);
+            string errorDescription = "";
+            int result = LocalPE.InstallPE(input1.Text, 1, progress1,out errorDescription);
             button2.Loading = false;
             //if (result != 0)
             //{
@@ -103,6 +101,10 @@ namespace ComPE_ToolBox
 
         public void GetPhysicalDriveNames()
         {
+            if(progress1.State!= AntdUI.TType.Success)
+            {
+                return;
+            }
             select1.Items.Clear();
             select1.Enabled = false;
             for (int i = 0; i < 26; i++)
@@ -131,8 +133,8 @@ namespace ComPE_ToolBox
                     }
                     catch { }
                 }
-                Debug.WriteLine(i.ToString() + ":" + tempModel + "["+list.Aggregate("",(current,s)=>current+s+";").TrimEnd(';')+"]" );
-                select1.Items.Add(i.ToString() + ":" + tempModel + "[" + list.Aggregate("", (current, s) => current + s + ";").TrimEnd(';') + "]");
+                Debug.WriteLine(i.ToString() + ":" + tempModel + "|["+list.Aggregate("",(current,s)=>current+s+";").TrimEnd(';')+"]" );
+                select1.Items.Add(i.ToString() + ":" + tempModel + "|[" + list.Aggregate("", (current, s) => current + s + ";").TrimEnd(';') + "]");
             }
             select1.Enabled = true;
             if (select1.Items.Count > 0)
@@ -149,6 +151,7 @@ namespace ComPE_ToolBox
             GetPhysicalDriveNames();
             input2.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"ComPE_Release.iso");
             ReleaseBins.ReleaseFile("USB_Boot_Menu_Search.exe");
+            ReleaseBins.ReleaseFile("fat32format.exe");
         }
 
         private void button8_Click(object sender, EventArgs e)
@@ -181,7 +184,7 @@ namespace ComPE_ToolBox
             base.WndProc(ref m);
         }
 
-        private void button7_Click(object sender, EventArgs e)
+        private async void button7_Click(object sender, EventArgs e)
         {
             DialogResult dialog = AntdUI.Modal.open(new Modal.Config(this, "执行前警告：", "本操作将清空选择的磁盘下的数据，请注意备份！\n继续请选择“确认”", TType.Warn)
             {
@@ -191,7 +194,63 @@ namespace ComPE_ToolBox
             {
                 return;
             }
-            //USBPE.InstallPE(progress1, int.Parse(select1.Text.First().ToString()));
+            string ErrorDescription = "";
+            button7.Loading = true;
+            tabPage2.Enabled = false;
+            flowLayoutPanel1.Enabled = false;
+            try
+            {
+                await Task.Run(() =>
+                {
+                    int result = USBPE.InstallPE(progress1, int.Parse(select1.Text.First().ToString()), int.Parse(select4.Text), select3.SelectedIndex == 0, (select1.Text.Split("|")[1].Replace("[", "").Replace("]", "").Split(",")[0][0]), out ErrorDescription,select2.Text.ToUpper());
+                    if (result != 0)
+                    {
+                        AntdUI.Modal.open(new Modal.Config(this, "执行失败：", "安装过程中发生错误，错误描述：" + result.ToString(), TType.Error)
+                        {
+                            CancelText = null,
+                            MaskClosable = false
+                        });
+                        button7.Loading = false;
+                        tabPage2.Enabled = true;
+                        flowLayoutPanel1.Enabled = true;
+                        progress1.Value = 0;
+                        progress1.State = AntdUI.TType.Success;
+                        GetPhysicalDriveNames();
+                        return;
+
+                    }
+                });
+
+            }
+            catch (Exception ex)
+            {
+                AntdUI.Modal.open(new Modal.Config(this, "执行失败：", "安装过程中发生异常，异常信息：" + ex.Message, TType.Error)
+                {
+                    CancelText = null,
+                    MaskClosable = false
+                });
+                button7.Loading = false;
+                tabPage2.Enabled = true;
+                flowLayoutPanel1.Enabled = true;
+                progress1.Value = 0;
+                progress1.State = AntdUI.TType.Success;
+                GetPhysicalDriveNames();
+                return;
+            }
+
+            button7.Loading = false;
+            tabPage2.Enabled = true;
+            flowLayoutPanel1.Enabled = true;
+            progress1.Value = 0;
+            progress1.State = AntdUI.TType.Success;
+            GetPhysicalDriveNames();
+            AntdUI.Modal.open(new Modal.Config(this, "执行成功：", "USB启动盘已制作完成！\n您现在可以将其作为应急启动盘使用了。\n按下“确认”退出程序。", TType.Success)
+            {
+                CancelText = null,
+                MaskClosable = false
+            });
+            ReleaseBins.RemoveTempPath();
+            Environment.Exit(0);
         }
 
         private void button10_Click(object sender, EventArgs e)
@@ -219,6 +278,9 @@ namespace ComPE_ToolBox
                     CancelText = null,
                     MaskClosable = false
                 });
+                button9.Loading = true;
+                tabPage3.Enabled = false;
+                flowLayoutPanel1.Enabled = false;
                 return;
             }
             button9.Loading = true;

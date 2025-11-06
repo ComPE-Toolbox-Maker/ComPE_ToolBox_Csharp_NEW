@@ -48,8 +48,6 @@
             label14 = new AntdUI.Label();
             label12 = new AntdUI.Label();
             select4 = new AntdUI.Select();
-            label13 = new AntdUI.Label();
-            select5 = new AntdUI.Select();
             label10 = new AntdUI.Label();
             select3 = new AntdUI.Select();
             label9 = new AntdUI.Label();
@@ -144,7 +142,6 @@
             tabs1.Pages.Add(tabPage2);
             tabs1.Pages.Add(tabPage3);
             tabs1.Pages.Add(tabPage4);
-            tabs1.SelectedIndex = 1;
             tabs1.Size = new Size(379, 374);
             tabs1.Style = styleCard1;
             tabs1.TabIndex = 5;
@@ -161,7 +158,7 @@
             tabPage1.Controls.Add(label4);
             tabPage1.Controls.Add(input1);
             tabPage1.Controls.Add(label3);
-            tabPage1.Location = new Point(-373, -368);
+            tabPage1.Location = new Point(3, 3);
             tabPage1.Name = "tabPage1";
             tabPage1.Size = new Size(373, 368);
             tabPage1.TabIndex = 11;
@@ -241,8 +238,6 @@
             tabPage2.Controls.Add(label14);
             tabPage2.Controls.Add(label12);
             tabPage2.Controls.Add(select4);
-            tabPage2.Controls.Add(label13);
-            tabPage2.Controls.Add(select5);
             tabPage2.Controls.Add(label10);
             tabPage2.Controls.Add(select3);
             tabPage2.Controls.Add(label9);
@@ -252,7 +247,7 @@
             tabPage2.Controls.Add(label11);
             tabPage2.Controls.Add(button7);
             tabPage2.Controls.Add(label8);
-            tabPage2.Location = new Point(3, 3);
+            tabPage2.Location = new Point(-373, -368);
             tabPage2.Name = "tabPage2";
             tabPage2.Size = new Size(373, 368);
             tabPage2.TabIndex = 12;
@@ -270,7 +265,7 @@
             // 
             // label14
             // 
-            label14.Location = new Point(67, 237);
+            label14.Location = new Point(60, 227);
             label14.Name = "label14";
             label14.Size = new Size(273, 37);
             label14.TabIndex = 38;
@@ -279,7 +274,7 @@
             // 
             // label12
             // 
-            label12.Location = new Point(-3, 210);
+            label12.Location = new Point(-3, 179);
             label12.Name = "label12";
             label12.Size = new Size(139, 23);
             label12.TabIndex = 37;
@@ -290,34 +285,13 @@
             // 
             select4.HandDragFolder = false;
             select4.Items.AddRange(new object[] { "1024", "2048", "4096" });
-            select4.Location = new Point(130, 205);
+            select4.Location = new Point(130, 174);
             select4.Name = "select4";
             select4.SelectedIndex = 1;
             select4.SelectedValue = "2048";
             select4.Size = new Size(189, 28);
             select4.TabIndex = 36;
             select4.Text = "2048";
-            // 
-            // label13
-            // 
-            label13.Location = new Point(15, 176);
-            label13.Name = "label13";
-            label13.Size = new Size(121, 23);
-            label13.TabIndex = 35;
-            label13.Text = "UD分区大小(MB)：";
-            label13.TextAlign = ContentAlignment.MiddleRight;
-            // 
-            // select5
-            // 
-            select5.HandDragFolder = false;
-            select5.Items.AddRange(new object[] { "8", "16", "32", "64" });
-            select5.Location = new Point(130, 174);
-            select5.Name = "select5";
-            select5.SelectedIndex = 0;
-            select5.SelectedValue = "8";
-            select5.Size = new Size(189, 27);
-            select5.TabIndex = 34;
-            select5.Text = "8";
             // 
             // label10
             // 
@@ -353,7 +327,7 @@
             // select2
             // 
             select2.HandDragFolder = false;
-            select2.Items.AddRange(new object[] { "exFAT", "FAT32", "NTFS" });
+            select2.Items.AddRange(new object[] { "exFAT", "NTFS" });
             select2.List = true;
             select2.Location = new Point(130, 109);
             select2.Name = "select2";
@@ -612,6 +586,7 @@
             progress1.ShowTextDot = 1;
             progress1.Size = new Size(640, 12);
             progress1.State = AntdUI.TType.Success;
+            progress1.Steps = 100;
             progress1.TabIndex = 7;
             progress1.Text = "";
             // 
@@ -688,8 +663,6 @@
         private AntdUI.Select select3;
         private AntdUI.Label label12;
         private AntdUI.Select select4;
-        private AntdUI.Label label13;
-        private AntdUI.Select select5;
         private AntdUI.Label label10;
         private AntdUI.Label label14;
         private AntdUI.Button button8;

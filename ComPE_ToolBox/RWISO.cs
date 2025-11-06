@@ -13,6 +13,8 @@ namespace ComPE_ToolBox
     {
         public static void ExtractISO(string ISOPath,string TargetPath,string RootPath)
         {
+            if(!Path.Exists(TargetPath))
+                Directory.CreateDirectory(TargetPath);
             using (FileStream fs = File.Open(ISOPath,FileMode.Open))
             {
                 CDReader reader = new(fs,false);
