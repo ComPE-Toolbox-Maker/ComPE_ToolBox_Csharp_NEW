@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DiscUtils;
-using DiscUtils.Iso9660;
+﻿using DiscUtils.Udf;
 
 namespace ComPE_ToolBox
 {
@@ -17,11 +10,11 @@ namespace ComPE_ToolBox
                 Directory.CreateDirectory(TargetPath);
             using (FileStream fs = File.Open(ISOPath,FileMode.Open))
             {
-                CDReader reader = new(fs,false);
+                UdfReader reader = new(new DiscUtils.Streams.SubStream(fs,0,fs.Length));
                 ExtractFiles(reader,ISOPath, TargetPath, RootPath,TargetPath);
             }
         }
-        public static void ExtractFiles(CDReader reader,string ISOPath, string TargetPath, string RootPath,string TargetRootPath)
+        public static void ExtractFiles(UdfReader reader,string ISOPath, string TargetPath, string RootPath,string TargetRootPath)
         {
             foreach (string a in reader.GetFiles(RootPath))
             {

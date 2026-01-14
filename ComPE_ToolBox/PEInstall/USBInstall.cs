@@ -1,14 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
-using DiscUtils;
-using DiscUtils.Fat;
-using DiscUtils.Partitions;
-using DiscUtils.Internal;
-using DiskInfo;
 
 namespace ComPE_ToolBox
 {
@@ -56,7 +47,7 @@ namespace ComPE_ToolBox
                 Console.WriteLine($"恢复自动播放时出错: {ex.Message}");
             }
         }
-        public static int InstallPE(AntdUI.Progress ProgressHwnd,int Device,int EFISize,bool isDouble,char PartitionLetter,out string ErrorDescription,string FormatType)
+        public static int InstallPE(AntdUI.Progress ProgressHwnd,int Device,int EFISize,bool isDouble,char PartitionLetter,out string ErrorDescription,string FormatType) // 外部调用主函数
         {
             ProgressHwnd.State = AntdUI.TType.None;
             DisableAutoPlay();
@@ -64,10 +55,16 @@ namespace ComPE_ToolBox
             
             ReleaseBins.ReleaseFile("ComPE.iso");
             ProgressHwnd.Value = 1F / 4F;
-            int result = CreateEFIPartition(Device, EFISize,PartitionLetter,out ErrorDescription);
+            int result;
+            if (!isDouble) {
+                result = CreateEFIPartition(Device, PartitionLetter, out ErrorDescription);
+            }
+            else {
+                result = CreateEFIPartition(Device, EFISize, PartitionLetter, out ErrorDescription);
+            }
             if(result != 0)
             {
-                ErrorDescription = "创建EFI分区失败，错误代码："+ result.ToString();
+                ErrorDescription += result.ToString();
                 ProgressHwnd.State = AntdUI.TType.Error;
                 ProgressHwnd.Value = 1;
                 RestoreAutoPlay();
@@ -89,7 +86,59 @@ namespace ComPE_ToolBox
             ProgressHwnd.Value = 4F / 4F;
             return 0;
         }
-        private static int CreateEFIPartition(int Device,int EFISize,char PartitionLetter,out string ErrorDesc)
+        private static int CreateEFIPartition(int Device, char PartitionLetter, out string ErrorDesc) // 单分区模式下引导分区=数据分区创建
+        {
+            string Script = "select disk " + Device.ToString() + "\n" +
+                "clean\n" +
+                "create par pri " + "\n" +
+                "assign letter=" + PartitionLetter + "\n" +
+                "active";
+
+            using (FileStream fs = File.Create(Path.Combine(ReleaseBins.TempPath, "diskpart.txt")))
+            {
+                fs.Write(Encoding.UTF8.GetBytes(Script));
+            }
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "diskpart",
+                    Arguments = $"/s \"{Path.Combine(ReleaseBins.TempPath, "diskpart.txt")}\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true, // 不显示窗口
+                    WindowStyle = ProcessWindowStyle.Hidden
+                }
+            };
+
+            process.Start();
+            process.WaitForExit();
+                        Debug.WriteLine("DiskPart completed successfully.");
+            if (process.ExitCode != 0)
+            {
+                ErrorDesc = process.StandardError.ReadToEnd();
+                Debug.WriteLine(ErrorDesc);
+                return process.ExitCode;
+            }
+            Debug.WriteLine("DiskPart completed successfully.");
+            bool init = Fat32Formatter.initFatFormat();
+            if (!init)
+            {
+                ErrorDesc = "无法释放fat32format.dll";
+                Debug.WriteLine(ErrorDesc);
+                return -1;
+            }
+            int result = Fat32Formatter.FormatFat32(PartitionLetter.ToString()+":", "ComPE", out ErrorDesc);
+            if (result != 0)
+            {
+                Debug.WriteLine(ErrorDesc);
+                return (int)result;
+            }
+            ErrorDesc = "";
+            return 0;
+        }
+        private static int CreateEFIPartition(int Device,int EFISize,char PartitionLetter,out string ErrorDesc) // 双分区模式下EFI分区创建
         {
             string Script = "select disk "+Device.ToString()+"\n" +
                 "clean\n" +
@@ -122,25 +171,16 @@ namespace ComPE_ToolBox
                 ErrorDesc = process.StandardError.ReadToEnd();
                 return process.ExitCode;
             }
-            process = new Process
+            bool init = Fat32Formatter.initFatFormat();
+            if (!init)
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = Path.Combine(ReleaseBins.TempPath, "fat32format.exe"),
-                    Arguments = $"{PartitionLetter}: -y",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true, // 不显示窗口
-                    WindowStyle = ProcessWindowStyle.Hidden
-                }
-            };
-            process.Start();
-            process.WaitForExit();
-            if (process.ExitCode != 0)
+                ErrorDesc = "无法释放fat32format.dll";
+                return -1;
+            }
+            int result = Fat32Formatter.FormatFat32(PartitionLetter.ToString()+":", "COMPE_EFI", out ErrorDesc);
+            if (result != 0)
             {
-                ErrorDesc = process.StandardError.ReadToEnd();
-                return process.ExitCode;
+                return (int)result;
             }
             ErrorDesc = "";
             return 0;
@@ -179,6 +219,10 @@ namespace ComPE_ToolBox
                 Debug.WriteLine("DiskPart Error: " + errorOutput);
                 return process.ExitCode;
             }
+            process.StartInfo.FileName = "cmd.exe";
+            process.StartInfo.Arguments = $"/c label {PartitionLetter}: {"ComPE"}";
+            process.Start();
+            process.WaitForExit();
             return 0;
         }
     }

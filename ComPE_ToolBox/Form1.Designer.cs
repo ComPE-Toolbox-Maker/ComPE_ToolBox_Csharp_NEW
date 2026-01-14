@@ -75,6 +75,7 @@
             button6 = new AntdUI.Button();
             progress1 = new AntdUI.Progress();
             saveFileDialog1 = new SaveFileDialog();
+            label13 = new AntdUI.Label();
             tabs1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
@@ -223,6 +224,7 @@
             input1.Size = new Size(231, 30);
             input1.TabIndex = 13;
             input1.Text = "ComPE 维护系统";
+            input1.TextChanged += input1_TextChanged;
             // 
             // label3
             // 
@@ -504,7 +506,7 @@
             // button1
             // 
             button1.BackColor = Color.DodgerBlue;
-            button1.Font = new Font("庞门正道细线体", 14.25F, FontStyle.Bold | FontStyle.Italic);
+            button1.Font = new Font("隶书", 18F, FontStyle.Bold | FontStyle.Italic);
             button1.ForeColor = Color.Black;
             button1.IconRatio = 0.8F;
             button1.IconSvg = resources.GetString("button1.IconSvg");
@@ -519,7 +521,7 @@
             // button3
             // 
             button3.BackColor = SystemColors.InactiveCaption;
-            button3.Font = new Font("庞门正道细线体", 14.25F, FontStyle.Bold | FontStyle.Italic);
+            button3.Font = new Font("隶书", 18F, FontStyle.Bold | FontStyle.Italic);
             button3.ForeColor = Color.Black;
             button3.IconRatio = 0.8F;
             button3.IconSvg = resources.GetString("button3.IconSvg");
@@ -534,7 +536,7 @@
             // button4
             // 
             button4.BackColor = SystemColors.InactiveCaption;
-            button4.Font = new Font("庞门正道细线体", 14.25F, FontStyle.Bold | FontStyle.Italic);
+            button4.Font = new Font("隶书", 18F, FontStyle.Bold | FontStyle.Italic);
             button4.ForeColor = Color.Black;
             button4.IconRatio = 0.8F;
             button4.IconSvg = resources.GetString("button4.IconSvg");
@@ -549,7 +551,7 @@
             // button5
             // 
             button5.BackColor = SystemColors.InactiveCaption;
-            button5.Font = new Font("庞门正道细线体", 14.25F, FontStyle.Bold | FontStyle.Italic);
+            button5.Font = new Font("隶书", 18F, FontStyle.Bold | FontStyle.Italic);
             button5.ForeColor = Color.Black;
             button5.IconRatio = 0.8F;
             button5.IconSvg = resources.GetString("button5.IconSvg");
@@ -564,7 +566,7 @@
             // button6
             // 
             button6.BackColor = SystemColors.InactiveCaption;
-            button6.Font = new Font("庞门正道细线体", 14.25F, FontStyle.Bold | FontStyle.Italic);
+            button6.Font = new Font("隶书", 18F, FontStyle.Bold | FontStyle.Italic);
             button6.ForeColor = Color.Black;
             button6.IconRatio = 0.8F;
             button6.IconSvg = resources.GetString("button6.IconSvg");
@@ -595,6 +597,15 @@
             saveFileDialog1.FileName = "ComPE_Release.iso";
             saveFileDialog1.Filter = "光盘镜像文件 (*.iso)|*.iso";
             // 
+            // label13
+            // 
+            label13.Location = new Point(475, 445);
+            label13.Name = "label13";
+            label13.Size = new Size(158, 20);
+            label13.TabIndex = 18;
+            label13.Text = "启动固件类型：Legacy";
+            label13.TextAlign = ContentAlignment.MiddleRight;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
@@ -602,6 +613,7 @@
             BackColor = Color.White;
             ClientSize = new Size(640, 480);
             ControlBox = false;
+            Controls.Add(label13);
             Controls.Add(progress1);
             Controls.Add(flowLayoutPanel1);
             Controls.Add(divider2);
@@ -675,5 +687,6 @@
         private AntdUI.Label label4;
         private AntdUI.Button button10;
         private SaveFileDialog saveFileDialog1;
+        private AntdUI.Label label13;
     }
 }

@@ -1,5 +1,6 @@
-using System.Diagnostics;
 using AntdUI;
+using System.ComponentModel;
+using System.Diagnostics;
 using Message = System.Windows.Forms.Message;
 
 
@@ -81,18 +82,29 @@ namespace ComPE_ToolBox
             }
             button2.Loading = true;
             string errorDescription = "";
-            int result = LocalPE.InstallPE(input1.Text, 1, progress1,out errorDescription);
+            int result = LocalPE.InstallPE(input1.Text, int.Parse(inputNumber1.Text), progress1, out errorDescription);
             button2.Loading = false;
-            //if (result != 0)
-            //{
-            //}
-
+            if (result != 0)
+            {
+                AntdUI.Modal.open(new Modal.Config(this, "执行失败：", "安装过程中发生错误，错误描述：" + errorDescription, TType.Error)
+                {
+                    CancelText = null,
+                    MaskClosable = false
+                });
+                ExitThis(result);
+            }
+            AntdUI.Modal.open(new Modal.Config(this, "执行成功：", "本地PE已安装完成！\n您现在可以在下次启动时选择ComPE进入应急环境了。\n按下“确认”退出程序。", TType.Success)
+            {
+                CancelText = null,
+                MaskClosable = false
+            });
+            ExitThis(0);
         }
 
         private void label11_Click(object sender, EventArgs e)
         {
             Process process = new Process();
-            process.StartInfo.FileName = Path.Combine(ReleaseBins.TempPath,"USB_BOOT_MENU_SEARCH.EXE");
+            process.StartInfo.FileName = Path.Combine(ReleaseBins.TempPath, "USB_BOOT_MENU_SEARCH.EXE");
             process.Start();
             Hide();
             process.WaitForExit();
@@ -101,7 +113,7 @@ namespace ComPE_ToolBox
 
         public void GetPhysicalDriveNames()
         {
-            if(progress1.State!= AntdUI.TType.Success)
+            if (progress1.State != AntdUI.TType.Success)
             {
                 return;
             }
@@ -120,20 +132,25 @@ namespace ComPE_ToolBox
                     continue;
                 }
                 List<string> list = new List<string>();
-                for (char j = 'A'; j <= 'Z'; j++) {
+                for (char j = 'A'; j <= 'Z'; j++)
+                {
                     try
                     {
                         string temp = DiskUtility.GetPhysicalDrivePath(j).Replace("\\\\.\\PhysicalDrive", "");
                         if (temp == i.ToString())
                         {
-                            list.Add(j.ToString()+":");
+                            list.Add(j.ToString() + ":");
                         }
 
 
                     }
                     catch { }
                 }
-                Debug.WriteLine(i.ToString() + ":" + tempModel + "|["+list.Aggregate("",(current,s)=>current+s+";").TrimEnd(';')+"]" );
+                if(list.Count==0)
+                {
+                    continue;
+                }
+                Debug.WriteLine(i.ToString() + ":" + tempModel + "|[" + list.Aggregate("", (current, s) => current + s + ";").TrimEnd(';') + "]");
                 select1.Items.Add(i.ToString() + ":" + tempModel + "|[" + list.Aggregate("", (current, s) => current + s + ";").TrimEnd(';') + "]");
             }
             select1.Enabled = true;
@@ -149,9 +166,11 @@ namespace ComPE_ToolBox
         private void Form1_Load(object sender, EventArgs e)
         {
             GetPhysicalDriveNames();
-            input2.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"ComPE_Release.iso");
+            label13.Text = "当前固件类型：" + FirmwareDetector.GetUEFIorLegacy();
+            input2.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ComPE_Release.iso");
             ReleaseBins.ReleaseFile("USB_Boot_Menu_Search.exe");
-            ReleaseBins.ReleaseFile("fat32format.exe");
+            //ReleaseBins.ReleaseFile("fat32format.exe");
+            
         }
 
         private void button8_Click(object sender, EventArgs e)
@@ -202,21 +221,15 @@ namespace ComPE_ToolBox
             {
                 await Task.Run(() =>
                 {
-                    int result = USBPE.InstallPE(progress1, int.Parse(select1.Text.First().ToString()), int.Parse(select4.Text), select3.SelectedIndex == 0, (select1.Text.Split("|")[1].Replace("[", "").Replace("]", "").Split(",")[0][0]), out ErrorDescription,select2.Text.ToUpper());
+                    int result = USBPE.InstallPE(progress1, int.Parse(select1.Text.First().ToString()), int.Parse(select4.Text), select3.SelectedIndex == 0, (select1.Text.Split("|")[1].Replace("[", "").Replace("]", "").Split(",")[0][0]), out ErrorDescription, select2.Text.ToUpper());
                     if (result != 0)
                     {
-                        AntdUI.Modal.open(new Modal.Config(this, "执行失败：", "安装过程中发生错误，错误描述：" + result.ToString(), TType.Error)
+                        AntdUI.Modal.open(new Modal.Config(this, "执行失败：", "安装过程中发生错误，错误描述：" + ErrorDescription, TType.Error)
                         {
                             CancelText = null,
                             MaskClosable = false
                         });
-                        button7.Loading = false;
-                        tabPage2.Enabled = true;
-                        flowLayoutPanel1.Enabled = true;
-                        progress1.Value = 0;
-                        progress1.State = AntdUI.TType.Success;
-                        GetPhysicalDriveNames();
-                        return;
+                        ExitThis(result);
 
                     }
                 });
@@ -229,12 +242,7 @@ namespace ComPE_ToolBox
                     CancelText = null,
                     MaskClosable = false
                 });
-                button7.Loading = false;
-                tabPage2.Enabled = true;
-                flowLayoutPanel1.Enabled = true;
-                progress1.Value = 0;
-                progress1.State = AntdUI.TType.Success;
-                GetPhysicalDriveNames();
+                ExitThis(-1);
                 return;
             }
 
@@ -250,7 +258,7 @@ namespace ComPE_ToolBox
                 MaskClosable = false
             });
             ReleaseBins.RemoveTempPath();
-            Environment.Exit(0);
+            ExitThis(0);
         }
 
         private void button10_Click(object sender, EventArgs e)
@@ -294,9 +302,10 @@ namespace ComPE_ToolBox
                     File.Move(Path.Combine(ReleaseBins.TempPath, "ComPE.iso"), input2.Text, true);
                 });
             }
-            catch(Exception ex) {
+            catch (Exception ex)
+            {
                 ReleaseBins.RemoveFile("ComPE.iso");
-                AntdUI.Modal.open(new Modal.Config(this, "执行失败：", "保存文件的时候发生异常。\n异常信息："+ex.Message, TType.Error)
+                AntdUI.Modal.open(new Modal.Config(this, "执行失败：", "保存文件的时候发生异常。\n异常信息：" + ex.Message, TType.Error)
                 {
                     CancelText = null,
                     MaskClosable = false
@@ -331,7 +340,20 @@ namespace ComPE_ToolBox
             {
                 e.Cancel = true;
             }
+            ExitThis(0);
+        }
+
+        private void input1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+        public void ExitThis(int code)//带着清理资源的过程退出程序
+        {
+            Debug.Write("程序清理");
+            canClose = true;
             ReleaseBins.RemoveTempPath();
+            Debug.Write("程序清理完成");
+            Environment.Exit(code);
         }
     }
 }
