@@ -73,6 +73,24 @@ namespace ComPE_ToolBox
  
             ProgressHwnd.Value = 2F / 4F;
             RWISO.ExtractISO(Path.Combine(ReleaseBins.TempPath, "ComPE.iso"), PartitionLetter + ":", "");
+            ProgressHwnd.Value = 3F / 4F;
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c bootsect /nt60 {PartitionLetter}: /force /mbr",
+                CreateNoWindow = true,
+                UseShellExecute = false
+            };
+            Process process = Process.Start(startInfo);
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                ErrorDescription = "更新引导记录失败，错误代码：" + process.ExitCode.ToString();
+                ProgressHwnd.State = AntdUI.TType.Error;
+                ProgressHwnd.Value = 1;
+                RestoreAutoPlay();
+                return process.ExitCode;
+            }
             if (isDouble)
             {
                 CreateDataPartition(Device, PartitionLetter, FormatType);
@@ -80,8 +98,8 @@ namespace ComPE_ToolBox
             ErrorDescription = "未发生执行错误现象。";
 
             File.Delete(Path.Combine(ReleaseBins.TempPath, "ComPE.iso"));
-            File.Delete(Path.Combine(ReleaseBins.TempPath, "diskpart.txt"));
-            ProgressHwnd.Value = 3F / 4F;
+            File.Delete(Path.Combine(ReleaseBins.TempPath, "diskpart.txt")); 
+
             RestoreAutoPlay();
             ProgressHwnd.Value = 4F / 4F;
             return 0;

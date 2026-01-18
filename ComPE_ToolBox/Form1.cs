@@ -14,9 +14,11 @@ namespace ComPE_ToolBox
         bool canClose = true;
         public Form1()
         {
+            ReleaseBins.ReleaseFile("USB_Boot_Menu_Search.exe");
+            // 初始化控件（此时如果字体加载成功，控件会自动使用我们加载的字体）
             InitializeComponent();
-        }
 
+        }
         private void pageHeader1_Click(object sender, EventArgs e)
         {
 
@@ -67,7 +69,41 @@ namespace ComPE_ToolBox
 
         private void button6_Click(object sender, EventArgs e)
         {
+            DialogResult dialog = AntdUI.Modal.open(new Modal.Config(this, "执行前警告：", "请重启操作系统前确认所有数据已经保存！\n若固件类型为UEFI，则重启后将尝试进入SETUP MENU。\n继续请选择“确认”", TType.Warn)
+            {
+                MaskClosable = false
+            });
+            if (dialog != DialogResult.OK)
+            {
+                return;
+            }
+            FirmwareDetector.GetUEFIorLegacy();
+            string shutdownCmd = FirmwareDetector.GetUEFIorLegacy() == "UEFI" ? "shutdown.exe /r /fw /t 0" : "shutdown.exe /r /t 0";
+            ProcessStartInfo psi = new ProcessStartInfo("cmd.exe")
+            {
+                Arguments = "/c " + shutdownCmd,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            Process process = new Process
+            {
+                StartInfo = psi
 
+            };
+            process.Start();
+            process.WaitForExit();
+            if(process.ExitCode != 0)
+            {
+                AntdUI.Modal.open(new Modal.Config(this, "执行失败：", "重启过程中发生错误，错误代码：" + process.ExitCode.ToString()+"\n若需，请尝试手动重启。", TType.Error)
+                {
+                    CancelText = null,
+                    MaskClosable = false
+                });
+                ExitThis(process.ExitCode);
+            }
+            ExitThis(0);
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -119,6 +155,8 @@ namespace ComPE_ToolBox
             }
             select1.Items.Clear();
             select1.Enabled = false;
+            select8.Items.Clear();
+            select8.Enabled = false;
             for (int i = 0; i < 26; i++)
             {
                 string tempModel = DiskInfo.DiskInfo.GetDiskProductModel(i);
@@ -146,21 +184,21 @@ namespace ComPE_ToolBox
                     }
                     catch { }
                 }
-                if(list.Count==0)
-                {
-                    continue;
-                }
                 Debug.WriteLine(i.ToString() + ":" + tempModel + "|[" + list.Aggregate("", (current, s) => current + s + ";").TrimEnd(';') + "]");
                 select1.Items.Add(i.ToString() + ":" + tempModel + "|[" + list.Aggregate("", (current, s) => current + s + ";").TrimEnd(';') + "]");
+                select8.Items.Add(i.ToString() + ":" + tempModel + "|[" + list.Aggregate("", (current, s) => current + s + ";").TrimEnd(';') + "]");
             }
             select1.Enabled = true;
+            select8.Enabled = true;
             if (select1.Items.Count > 0)
             {
                 select1.SelectedIndex = 0;
+                select8.SelectedIndex = 0;
                 button7.Enabled = true;
                 return;
             }
             select1.Text = "无可用移动磁盘";
+            select8.Text = "无可用移动磁盘";
             button7.Enabled = false;
         }
         private void Form1_Load(object sender, EventArgs e)
@@ -168,9 +206,10 @@ namespace ComPE_ToolBox
             GetPhysicalDriveNames();
             label13.Text = "当前固件类型：" + FirmwareDetector.GetUEFIorLegacy();
             input2.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ComPE_Release.iso");
-            ReleaseBins.ReleaseFile("USB_Boot_Menu_Search.exe");
+
+            tabs1.SelectedIndex = 0;
             //ReleaseBins.ReleaseFile("fat32format.exe");
-            
+
         }
 
         private void button8_Click(object sender, EventArgs e)
@@ -205,7 +244,7 @@ namespace ComPE_ToolBox
 
         private async void button7_Click(object sender, EventArgs e)
         {
-            DialogResult dialog = AntdUI.Modal.open(new Modal.Config(this, "执行前警告：", "本操作将清空选择的磁盘下的数据，请注意备份！\n继续请选择“确认”", TType.Warn)
+            DialogResult dialog = AntdUI.Modal.open(new Modal.Config(this, "执行前警告：", "本操作将清空选择的磁盘下的数据，请注意备份！\n该操作涉及磁盘引导扇区读写，可能引起反病毒软件的识别（包括对bootsect.exe的），请谨慎判断。\n继续请选择“确认”", TType.Warn)
             {
                 MaskClosable = false
             });
@@ -221,7 +260,13 @@ namespace ComPE_ToolBox
             {
                 await Task.Run(() =>
                 {
-                    int result = USBPE.InstallPE(progress1, int.Parse(select1.Text.First().ToString()), int.Parse(select4.Text), select3.SelectedIndex == 0, (select1.Text.Split("|")[1].Replace("[", "").Replace("]", "").Split(",")[0][0]), out ErrorDescription, select2.Text.ToUpper());
+                    List<string> Partitions = [.. select1.Text.Split("|")[1].Replace("[", "").Replace("]", "").Split(",")];
+                    if (Partitions.Count == 0)
+                    {
+                        Partitions.Add(DiskUtility.GetAvailableDriveLetters()[0] + ":");
+
+                    }
+                    int result = USBPE.InstallPE(progress1, int.Parse(select1.Text.First().ToString()), int.Parse(select4.Text), select3.SelectedIndex == 0, (Partitions[0][0]), out ErrorDescription, select2.Text.ToUpper());
                     if (result != 0)
                     {
                         AntdUI.Modal.open(new Modal.Config(this, "执行失败：", "安装过程中发生错误，错误描述：" + ErrorDescription, TType.Error)
@@ -339,6 +384,7 @@ namespace ComPE_ToolBox
             if (dialog != DialogResult.OK)
             {
                 e.Cancel = true;
+                return;
             }
             ExitThis(0);
         }
@@ -354,6 +400,71 @@ namespace ComPE_ToolBox
             ReleaseBins.RemoveTempPath();
             Debug.Write("程序清理完成");
             Environment.Exit(code);
+        }
+
+        private void select3_SelectedIndexChanged(object sender, IntEventArgs e)
+        {
+            if (((AntdUI.Select)sender).SelectedIndex == 0)
+            {
+                select4.Enabled = true;
+                select2.Enabled = true;
+            }
+            else
+            {
+                select4.Enabled = false;
+                select2.Enabled = false;
+            }
+        }
+
+        private void tabPage1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button12_Click(object sender, EventArgs e)
+        {
+            Hide();
+            string tfirm;
+            switch (select5.SelectedIndex)
+            {
+
+                case 1:
+                    {
+                        tfirm = "-bios efi32.bin";
+                        break;
+                    }
+                case 2:
+                    {
+                        tfirm = "-bios efi64.bin";
+                        break;
+                    }
+                default:
+                case 0:
+                    {
+                        tfirm = "-vga std";
+                        break;
+                    }
+            }
+            ReleaseBins.ReleaseFile("qemu.iso");
+            RWISO.ExtractISO(Path.Combine(ReleaseBins.TempPath, "qemu.iso"), Path.Combine(ReleaseBins.TempPath, "QEMU"), "");
+            string bootCmd = $" -L . -m 1024 -hda //./PhysicalDrive{select8.Text[0]} -localtime -snapshot {tfirm}";
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = $"{ ReleaseBins.TempPath}\\QEMU\\qemu.exe" ,// 只放纯路径
+                Arguments = bootCmd, // 所有参数放这里
+                WorkingDirectory = $"{ReleaseBins.TempPath}\\QEMU", // 强烈建议：设为QEMU所在目录，这样“-L .”才能正确找到bios文件夹
+                UseShellExecute = false, 
+                RedirectStandardOutput = true, // 如果需要捕获输出
+                CreateNoWindow = true // 不显示窗口
+            };
+            Process.Start(startInfo).WaitForExit();
+            
+            Show();
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            GetPhysicalDriveNames();
         }
     }
 }

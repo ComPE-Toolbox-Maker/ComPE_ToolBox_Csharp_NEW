@@ -112,11 +112,27 @@ namespace ComPE_ToolBox
             }
         }
 
-        private static string FormatDrivePath(VOLUME_DISK_EXTENTS diskExtents)
+        private static string? FormatDrivePath(VOLUME_DISK_EXTENTS diskExtents) //物理磁盘路径字符串格式化（不是格盘）
         {
             return diskExtents.NumberOfDiskExtents == 0 ? 
                 null : 
                 $@"\\.\PhysicalDrive{diskExtents.Extents[0].DiskNumber}";
+        }
+        public static List<char> GetAvailableDriveLetters()
+        {
+            // 获取已使用的盘符
+            var usedDrives = DriveInfo.GetDrives()
+                .Select(drive => drive.Name[0])
+                .Distinct()
+                .ToList();
+
+            // 生成C到Z的所有可能盘符
+            var allLetters = Enumerable.Range('C', 24)  // 'C' ASCII 67, 24个字母到Z
+                .Select(c => (char)c)
+                .ToList();
+
+            // 返回未使用的盘符列表
+            return allLetters.Except(usedDrives).ToList();
         }
 
         #region Win32 API 定义

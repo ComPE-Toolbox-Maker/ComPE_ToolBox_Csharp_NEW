@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk/8.0.417">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -9,12 +9,22 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SignAssembly>False</SignAssembly>
     <ApplicationManifest>C:\Users\74575\source\repos\ComPE_ToolBox\App.manifest</ApplicationManifest>
+    <ApplicationIcon>compe.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ReleaseFile\RuntimeFontLoader.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="DependExecutable\ComPE.iso" />
     <None Remove="DependExecutable\fat32format.dll" />
+    <None Remove="DependExecutable\qemu.iso" />
     <None Remove="DependExecutable\USB_Boot_Menu_Search.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="compe.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,6 +71,10 @@
 
   <ItemGroup>
     <Folder Include="Resources\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="DependExecutable\qemu.iso" />
   </ItemGroup>
 
 </Project>

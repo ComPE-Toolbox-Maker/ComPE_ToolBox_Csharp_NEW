@@ -65,6 +65,14 @@
             input2 = new AntdUI.Input();
             label18 = new AntdUI.Label();
             tabPage4 = new AntdUI.TabPage();
+            select5 = new AntdUI.Select();
+            label19 = new AntdUI.Label();
+            button11 = new AntdUI.Button();
+            label17 = new AntdUI.Label();
+            select8 = new AntdUI.Select();
+            label22 = new AntdUI.Label();
+            button12 = new AntdUI.Button();
+            label23 = new AntdUI.Label();
             divider1 = new AntdUI.Divider();
             divider2 = new AntdUI.Divider();
             flowLayoutPanel1 = new FlowLayoutPanel();
@@ -80,6 +88,7 @@
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
             tabPage3.SuspendLayout();
+            tabPage4.SuspendLayout();
             flowLayoutPanel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -143,6 +152,7 @@
             tabs1.Pages.Add(tabPage2);
             tabs1.Pages.Add(tabPage3);
             tabs1.Pages.Add(tabPage4);
+            tabs1.SelectedIndex = 1;
             tabs1.Size = new Size(379, 374);
             tabs1.Style = styleCard1;
             tabs1.TabIndex = 5;
@@ -159,11 +169,12 @@
             tabPage1.Controls.Add(label4);
             tabPage1.Controls.Add(input1);
             tabPage1.Controls.Add(label3);
-            tabPage1.Location = new Point(3, 3);
+            tabPage1.Location = new Point(-373, -368);
             tabPage1.Name = "tabPage1";
             tabPage1.Size = new Size(373, 368);
             tabPage1.TabIndex = 11;
             tabPage1.Text = "tabPage1";
+            tabPage1.Click += tabPage1_Click;
             // 
             // button2
             // 
@@ -249,7 +260,7 @@
             tabPage2.Controls.Add(label11);
             tabPage2.Controls.Add(button7);
             tabPage2.Controls.Add(label8);
-            tabPage2.Location = new Point(-373, -368);
+            tabPage2.Location = new Point(3, 3);
             tabPage2.Name = "tabPage2";
             tabPage2.Size = new Size(373, 368);
             tabPage2.TabIndex = 12;
@@ -267,11 +278,11 @@
             // 
             // label14
             // 
-            label14.Location = new Point(60, 227);
+            label14.Location = new Point(52, 208);
             label14.Name = "label14";
-            label14.Size = new Size(273, 37);
+            label14.Size = new Size(281, 74);
             label14.TabIndex = 38;
-            label14.Text = "注意：请勿在操作执行期间移除可移动磁盘设备\r\n否则可能造成数据损失！";
+            label14.Text = "注意：请勿在操作执行期间移除可移动磁盘设备\r\n否则可能造成数据损失！\r\n该操作涉及磁盘引导扇区读写，可能引起反病毒软件的识别（包括对bootsect.exe的），请谨慎判断。\r\n";
             label14.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // label12
@@ -307,7 +318,7 @@
             // select3
             // 
             select3.HandDragFolder = false;
-            select3.Items.AddRange(new object[] { "双分区（BOOT+DATA）", "单分区（BOOT=DATA）", "三分区（UD+EFI+DATA）" });
+            select3.Items.AddRange(new object[] { "双分区（BOOT+DATA）", "单分区（BOOT=DATA）" });
             select3.List = true;
             select3.Location = new Point(130, 140);
             select3.Name = "select3";
@@ -316,6 +327,7 @@
             select3.Size = new Size(189, 30);
             select3.TabIndex = 32;
             select3.Text = "双分区（BOOT+DATA）";
+            select3.SelectedIndexChanged += select3_SelectedIndexChanged;
             // 
             // label9
             // 
@@ -462,11 +474,96 @@
             // 
             // tabPage4
             // 
-            tabPage4.Location = new Point(0, 0);
+            tabPage4.Controls.Add(select5);
+            tabPage4.Controls.Add(label19);
+            tabPage4.Controls.Add(button11);
+            tabPage4.Controls.Add(label17);
+            tabPage4.Controls.Add(select8);
+            tabPage4.Controls.Add(label22);
+            tabPage4.Controls.Add(button12);
+            tabPage4.Controls.Add(label23);
+            tabPage4.Location = new Point(-373, -368);
             tabPage4.Name = "tabPage4";
-            tabPage4.Size = new Size(0, 0);
+            tabPage4.Size = new Size(373, 368);
             tabPage4.TabIndex = 14;
             tabPage4.Text = "tabPage4";
+            // 
+            // select5
+            // 
+            select5.Items.AddRange(new object[] { "Legacy BIOS", "UEFI x32", "UEFI x64" });
+            select5.List = true;
+            select5.Location = new Point(130, 155);
+            select5.Name = "select5";
+            select5.SelectedIndex = 0;
+            select5.SelectedValue = "Legacy BIOS";
+            select5.Size = new Size(142, 27);
+            select5.TabIndex = 53;
+            select5.Text = "Legacy BIOS";
+            // 
+            // label19
+            // 
+            label19.Location = new Point(25, 154);
+            label19.Name = "label19";
+            label19.Size = new Size(121, 23);
+            label19.TabIndex = 52;
+            label19.Text = "模拟启动固件类型：";
+            // 
+            // button11
+            // 
+            button11.Location = new Point(270, 120);
+            button11.Name = "button11";
+            button11.Size = new Size(49, 29);
+            button11.TabIndex = 51;
+            button11.Text = "刷新";
+            button11.Type = AntdUI.TTypeMini.Info;
+            button11.Click += button11_Click;
+            // 
+            // label17
+            // 
+            label17.Location = new Point(43, 226);
+            label17.Name = "label17";
+            label17.Size = new Size(292, 37);
+            label17.TabIndex = 50;
+            label17.Text = "提示：若弹出有关”内存不足无法创建RamDisk”的内容\r\n属正常现象，建议在实际环境下测试";
+            label17.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // select8
+            // 
+            select8.List = true;
+            select8.Location = new Point(130, 122);
+            select8.Name = "select8";
+            select8.Size = new Size(142, 27);
+            select8.TabIndex = 43;
+            // 
+            // label22
+            // 
+            label22.Location = new Point(73, 125);
+            label22.Name = "label22";
+            label22.Size = new Size(68, 23);
+            label22.TabIndex = 42;
+            label22.Text = "安装磁盘：";
+            // 
+            // button12
+            // 
+            button12.Font = new Font("Microsoft YaHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            button12.IconRatio = 1F;
+            button12.IconSvg = resources.GetString("button12.IconSvg");
+            button12.Location = new Point(120, 286);
+            button12.Name = "button12";
+            button12.Size = new Size(137, 56);
+            button12.TabIndex = 41;
+            button12.Text = "启动虚拟机";
+            button12.Type = AntdUI.TTypeMini.Info;
+            button12.Click += button12_Click;
+            // 
+            // label23
+            // 
+            label23.Location = new Point(47, 40);
+            label23.Name = "label23";
+            label23.Size = new Size(288, 52);
+            label23.TabIndex = 40;
+            label23.Text = "本界面可用于在当前环境下测试“移动安装”启动盘\r\n是否正常制作\r\n（测试环境为QEMU虚拟机）";
+            label23.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // divider1
             // 
@@ -506,7 +603,7 @@
             // button1
             // 
             button1.BackColor = Color.DodgerBlue;
-            button1.Font = new Font("隶书", 18F, FontStyle.Bold | FontStyle.Italic);
+            button1.Font = new Font("等线", 15.75F, FontStyle.Bold | FontStyle.Italic);
             button1.ForeColor = Color.Black;
             button1.IconRatio = 0.8F;
             button1.IconSvg = resources.GetString("button1.IconSvg");
@@ -521,7 +618,7 @@
             // button3
             // 
             button3.BackColor = SystemColors.InactiveCaption;
-            button3.Font = new Font("隶书", 18F, FontStyle.Bold | FontStyle.Italic);
+            button3.Font = new Font("等线", 15.75F, FontStyle.Bold | FontStyle.Italic);
             button3.ForeColor = Color.Black;
             button3.IconRatio = 0.8F;
             button3.IconSvg = resources.GetString("button3.IconSvg");
@@ -536,7 +633,7 @@
             // button4
             // 
             button4.BackColor = SystemColors.InactiveCaption;
-            button4.Font = new Font("隶书", 18F, FontStyle.Bold | FontStyle.Italic);
+            button4.Font = new Font("等线", 15.75F, FontStyle.Bold | FontStyle.Italic);
             button4.ForeColor = Color.Black;
             button4.IconRatio = 0.8F;
             button4.IconSvg = resources.GetString("button4.IconSvg");
@@ -551,7 +648,7 @@
             // button5
             // 
             button5.BackColor = SystemColors.InactiveCaption;
-            button5.Font = new Font("隶书", 18F, FontStyle.Bold | FontStyle.Italic);
+            button5.Font = new Font("等线", 15.75F, FontStyle.Bold | FontStyle.Italic);
             button5.ForeColor = Color.Black;
             button5.IconRatio = 0.8F;
             button5.IconSvg = resources.GetString("button5.IconSvg");
@@ -566,7 +663,7 @@
             // button6
             // 
             button6.BackColor = SystemColors.InactiveCaption;
-            button6.Font = new Font("隶书", 18F, FontStyle.Bold | FontStyle.Italic);
+            button6.Font = new Font("等线", 15.75F, FontStyle.Bold | FontStyle.Italic);
             button6.ForeColor = Color.Black;
             button6.IconRatio = 0.8F;
             button6.IconSvg = resources.GetString("button6.IconSvg");
@@ -636,6 +733,7 @@
             tabPage1.ResumeLayout(false);
             tabPage2.ResumeLayout(false);
             tabPage3.ResumeLayout(false);
+            tabPage4.ResumeLayout(false);
             flowLayoutPanel1.ResumeLayout(false);
             ResumeLayout(false);
         }
@@ -688,5 +786,13 @@
         private AntdUI.Button button10;
         private SaveFileDialog saveFileDialog1;
         private AntdUI.Label label13;
+        private AntdUI.Button button11;
+        private AntdUI.Label label17;
+        private AntdUI.Select select8;
+        private AntdUI.Label label22;
+        private AntdUI.Button button12;
+        private AntdUI.Label label23;
+        private AntdUI.Select select5;
+        private AntdUI.Label label19;
     }
 }

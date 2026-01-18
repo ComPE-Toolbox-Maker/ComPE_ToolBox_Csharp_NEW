@@ -17,7 +17,7 @@ namespace ComPE_ToolBox
 			string sysTemp = Path.GetTempPath();
 			Directory.CreateDirectory(Path.Combine(sysTemp,name));
 			TempPath = Path.Combine(sysTemp,name);
-            Debug.WriteLine(TempPath);
+            Debug.WriteLine($"已创建临时目录：{TempPath}");
         }
 		public static bool ReleaseFile(string FileName) {
 			CreateTempPath("ComPE");
@@ -32,8 +32,8 @@ namespace ComPE_ToolBox
 		public static void RemoveTempPath() {
 			try
 			{
-				Debug.WriteLine(TempPath);
-				//Directory.Delete(TempPath, true);
+				//Debug.WriteLine(TempPath);
+				Directory.Delete(TempPath, true);
 			}catch {/*无视*/}
 		}
         public static void RemoveFile(string FileName)
