@@ -13,6 +13,10 @@ namespace ComPE_ToolBox
                 return result;
             }
             result = CopyFilesToLocalPEPartition($"{Environment.GetFolderPath(Environment.SpecialFolder.System).First()}:\\ComPE");
+            if (result != 0)
+            {
+                return result;
+            }
             //ErrorDescription = "本地安装功能尚未实现。";
             return 0;
         }
@@ -51,6 +55,8 @@ namespace ComPE_ToolBox
                 cmdList.Add($@"bcdedit /set  {{beaab3b9-80c3-13a8-6cf2-f5cc87f4006e}} path \windows\system32\boot\winload.exe");
                 cmdLines = cmdList.ToArray();
             }
+            bcdBackup.BackupBCDFile(out ErrorDescription);
+            bcdBackup.InitBCD();
             Debug.WriteLine("Creating boot menu entry with the following commands:");
             foreach (var cmd in cmdLines)
             {
@@ -68,16 +74,11 @@ namespace ComPE_ToolBox
                     string output = proc.StandardOutput.ReadToEnd();
                     string error = output+proc.StandardError.ReadToEnd();
                     Debug.WriteLine($"Output: {output}");
-                    if (!string.IsNullOrEmpty(error))
-                    {
-                        Debug.WriteLine($"Error: {error}");
-                        ErrorDescription = error;
-                        return proc.ExitCode;
-                    }
                     if (proc.ExitCode != 0)
                     {
                         ErrorDescription = error;
                         Debug.WriteLine($"Error: {error}");
+                        bcdBackup.RestoreBCDFile(out _);
                         return proc.ExitCode;
                     }
                 }
